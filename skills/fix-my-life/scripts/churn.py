@@ -58,7 +58,7 @@ SUPPRESSIONS = [
 
 CONFIG_RE = re.compile(
     r"^(\.[^/]+|Makefile|Justfile|Taskfile\.ya?ml|Dockerfile[^/]*|[^/]+\.(ya?ml|toml|json|cfg|ini|mod|lock)"
-    r"|\.github/.+|\.circleci/.+|scripts/.+|[^/]*(AGENTS|CLAUDE|CONTRIBUTING)\.md)$"
+    r"|\.github/.+|\.gitlab/.+|\.circleci/.+|scripts/.+|[^/]*(AGENTS|CLAUDE|CONTRIBUTING)\.md)$"
 )
 GENERATED_PATH_RE = re.compile(
     r"(^|/)(testdata|__snapshots__|golden|vendor|node_modules|dist|gen|generated)/"
@@ -172,7 +172,7 @@ def main() -> None:
     # Generated files: the patterns of the caller, .gitattributes, usual paths, and the file header.
     patterns = list(args.generated)
     for line in git("show", f"{ref}:.gitattributes", check=False).splitlines():
-        if "linguist-generated" in line and not line.lstrip().startswith("#"):
+        if ("linguist-generated" in line or "gitlab-generated" in line) and not line.lstrip().startswith("#"):
             patterns.append(line.split()[0])
     header_cache: dict[str, bool] = {}
 
