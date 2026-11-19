@@ -27,6 +27,9 @@ Ask the agent, for example:
 - "Do a toil audit of this repository."
 - `/fix-my-life`
 
+The skill has commands for the CI records and the merge requests of GitHub (`gh`) and of
+GitLab (`glab`).
+
 ### What is in the skill
 
 | File | Purpose |

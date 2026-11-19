@@ -46,8 +46,8 @@ Read `references/patterns.md` first. It names the usual patterns and the signal 
 one, so you know what to look for in the output.
 
 Find the list of generated files of the repository: `.gitattributes`
-(`linguist-generated`), the `generate` targets of the build file, the header "DO NOT
-EDIT". Then run the bundled script. It only reads.
+(`linguist-generated` on GitHub, `gitlab-generated` on GitLab), the `generate` targets of
+the build file, the header "DO NOT EDIT". Then run the bundled script. It only reads.
 
 ```bash
 python3 -I <skill directory>/scripts/churn.py --ref origin/main --since "<range>" \
@@ -69,13 +69,46 @@ Two sections need care:
 - **A hot directory with a high "only" count** is work that touches nothing else: plans,
   specs, documents, configuration. No single file in it is hot, so the file list hides it.
 
-Then collect what the history cannot show. Use the tools that the session has, for example
-the GitHub tools or these commands:
+Then collect what the history cannot show. Use the tools that the session has for the
+host of the repository (`git remote get-url origin` shows the host). If the session has
+tools for the host, use them. If not, use the CLI of the host.
+
+GitHub, with `gh`:
 
 ```bash
 gh run list --limit 200 --json conclusion,event,createdAt,updatedAt,attempt,workflowName
 gh pr list --state open --limit 200 --json number,title,createdAt,isDraft,files
 ```
+
+GitLab, with `glab`:
+
+```bash
+# Pipelines: the status, the source and the times of the last 200.
+glab ci list --per-page 100 --page 1 --output json \
+    --jq '.[] | [.status, .source, .ref, .created_at, .updated_at] | @tsv'
+glab ci list --per-page 100 --page 2 --output json \
+    --jq '.[] | [.status, .source, .ref, .created_at, .updated_at] | @tsv'
+
+# Only the failed and the canceled pipelines since a date.
+glab ci list --status failed --updated-after 2026-01-01T00:00:00Z --per-page 100 --output json
+glab ci list --status canceled --updated-after 2026-01-01T00:00:00Z --per-page 100 --output json
+
+# Open merge requests. has_conflicts is a direct record of a conflict with the target branch.
+glab mr list --per-page 100 --output json \
+    --jq '.[] | [.iid, .created_at, .draft, .has_conflicts, .detailed_merge_status, .title] | @tsv'
+
+# Jobs that a person or a rule ran again in one pipeline: a retry hides a flaky job.
+glab api "projects/:fullpath/pipelines/<pipeline id>/jobs?include_retried=true&per_page=100" \
+    | jq -r '.[] | select(.retried) | [.name, .status, .failure_reason] | @tsv'
+
+# The files of one merge request, to see which open ones touch the same hot file.
+glab api "projects/:fullpath/merge_requests/<iid>/diffs?per_page=100" | jq -r '.[].new_path'
+```
+
+On GitLab, read `.gitlab-ci.yml` and the files that it includes as the CI configuration,
+and "merge request" for "pull request" in this skill. A merge train is the merge queue.
+On a host with no CLI in the session, say in the report that you did not read the CI
+records.
 
 - CI records: the share of failed and canceled runs, the duration, the number of runs for
   each hour, runs that passed on a second attempt.
