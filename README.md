@@ -1,21 +1,25 @@
-# fix-my-life
+# agent-skills
 
-An agent skill that finds the toil in a repository and proposes how to remove it.
+Skills for coding agents.
+
+## fix-my-life
+
+A skill that finds the toil in a repository and proposes how to remove it.
 
 It reads the Git history, the configuration and the CI records of a repository. It writes
 a ranked report: each cause of toil with its evidence, its cost, what the project already
 decided about it, and a repair. It does not change the repository that it reads.
 
-## Install
+### Install
 
 ```bash
-npx skills add <owner>/<this repository> --skill fix-my-life
+npx skills add DwaineSaunderson/agent-skills --skill fix-my-life
 ```
 
 Or copy `skills/fix-my-life/` into the skills directory of your agent (for Claude Code:
 `.claude/skills/` in a project, or `~/.claude/skills/`).
 
-## Use
+### Use
 
 Ask the agent, for example:
 
@@ -23,7 +27,7 @@ Ask the agent, for example:
 - "Do a toil audit of this repository."
 - `/fix-my-life`
 
-## What is in the skill
+### What is in the skill
 
 | File | Purpose |
 | --- | --- |
